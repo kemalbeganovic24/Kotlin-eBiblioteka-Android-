@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "542805728567",
+    "firebase_url": "https://ebiblioteka-28abf-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "ebiblioteka-28abf",
+    "storage_bucket": "ebiblioteka-28abf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:542805728567:android:5455439ecfe5b3bc034eb2",
+        "android_client_info": {
+          "package_name": "com.example.ebiblioteka"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCknDDMuZbvIhO6ROopj41hCClq7r6zylI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
