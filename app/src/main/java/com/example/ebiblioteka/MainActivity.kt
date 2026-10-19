@@ -125,7 +125,6 @@ fun MainAppNavigation() {
             ) {
                 composable("onboarding") { OnboardingScreen(navController) }
 
-                composable("login") { LoginScreen(navController) }
 
                 composable(
                     route = "home/{korisnik}",

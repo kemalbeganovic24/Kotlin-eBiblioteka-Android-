@@ -1,5 +1,6 @@
 package com.example.ebiblioteka
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +21,7 @@ import com.google.firebase.database.ValueEventListener
 @Composable
 fun ListaKnjigaScreen(odabranaVrsta: String, imeKorisnika: String) {
     var knjige by remember { mutableStateOf(listOf<Knjiga>()) }
+    var odabranaKnjiga by remember { mutableStateOf<Knjiga?>(null) }
 
     LaunchedEffect(odabranaVrsta) {
         val url = "https://ebiblioteka-28abf-default-rtdb.europe-west1.firebasedatabase.app"
@@ -30,49 +32,11 @@ fun ListaKnjigaScreen(odabranaVrsta: String, imeKorisnika: String) {
                 val ucitaneKnjige = mutableListOf<Knjiga>()
 
                 for (child in snapshot.children) {
-                    try {
-                        val naslov = child.child("naslov").value?.toString() ?: "Nepoznat naslov"
-                        val jezik = child.child("jezik").value?.toString() ?: "BHS"
-                        val tkoJeUnio = child.child("tkoJeUnio").value?.toString() ?: "Sistem"
-
-                        val vrsta = child.child("žanr").value?.toString()
-                            ?: (child.child("vrsta").value?.toString() ?: "Općenito")
-
-                        val brojRaw = child.child("broj").value
-                        val broj = when (brojRaw) {
-                            is Long -> brojRaw.toInt()
-                            is Int -> brojRaw
-                            is String -> brojRaw.toIntOrNull() ?: 0
-                            is Double -> brojRaw.toInt()
-                            else -> 0
-                        }
-
-                        val autoriRaw = child.child("autori").value
-                        val autorIme = when (autoriRaw) {
-                            is String -> autoriRaw
-                            is List<*> -> autoriRaw.filterIsInstance<String>().joinToString(", ")
-                            else -> child.child("autor").value?.toString() ?: "Nepoznat autor"
-                        }
-
-                        val novaKnjiga = Knjiga(
-                            id = child.key ?: "",
-                            naslov = naslov,
-                            autor = autorIme,
-                            broj = broj,
-                            jezik = jezik,
-                            vrsta = vrsta,
-                            tkoJeUnio = tkoJeUnio,
-                            naStanju = broj > 0
-                        )
-
-                        if (
-                            odabranaVrsta == "Sve" ||
-                            vrsta.contains(odabranaVrsta, ignoreCase = true)
-                        ) {
-                            ucitaneKnjige.add(novaKnjiga)
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    val knjiga = child.toKnjiga()
+                    if (odabranaVrsta == "Sve" ||
+                        knjiga.vrsta.contains(odabranaVrsta, ignoreCase = true)
+                    ) {
+                        ucitaneKnjige.add(knjiga)
                     }
                 }
                 knjige = ucitaneKnjige.sortedBy { it.naslov.lowercase() }
@@ -101,13 +65,22 @@ fun ListaKnjigaScreen(odabranaVrsta: String, imeKorisnika: String) {
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(knjige) { knjiga ->
-                    Column(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { odabranaKnjiga = knjiga }
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = knjiga.naslov, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                            Text(
+                                text = knjiga.naslov,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
                             Card(
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (knjiga.broj > 0) Color(0xFFC8E6C9) else Color(0xFFFFCDD2)
@@ -124,33 +97,18 @@ fun ListaKnjigaScreen(odabranaVrsta: String, imeKorisnika: String) {
                             }
                         }
                         Text(text = "Autor: ${knjiga.autor}", fontSize = 14.sp, color = Color.Gray)
-                        Text(
-                            text = "Broj: ${knjiga.broj}",
-                            fontSize = 12.sp,
-                            color = Color.Gray
-                        )
-
-                        Text(
-                            text = "Jezik: ${knjiga.jezik}",
-                            fontSize = 12.sp,
-                            color = Color.Gray
-                        )
-
-                        Text(
-                            text = "Unio: ${knjiga.tkoJeUnio}",
-                            fontSize = 12.sp,
-                            color = Color.Gray
-                        )
-
-                        Text(
-                            text = "Žanr: ${knjiga.vrsta}",
-                            fontSize = 12.sp,
-                            color = Color.Gray
-                        )
+                        Text(text = "Broj: ${knjiga.broj}", fontSize = 12.sp, color = Color.Gray)
+                        Text(text = "Jezik: ${knjiga.jezik}", fontSize = 12.sp, color = Color.Gray)
+                        Text(text = "Unio: ${knjiga.tkoJeUnio}", fontSize = 12.sp, color = Color.Gray)
+                        Text(text = "Žanr: ${knjiga.vrsta}", fontSize = 12.sp, color = Color.Gray)
                         HorizontalDivider(modifier = Modifier.padding(top = 8.dp), color = Color(0xFFE0E0E0))
                     }
                 }
             }
         }
+    }
+
+    odabranaKnjiga?.let { knjiga ->
+        KnjigaDetaljiSheet(knjiga = knjiga, onDismiss = { odabranaKnjiga = null })
     }
 }

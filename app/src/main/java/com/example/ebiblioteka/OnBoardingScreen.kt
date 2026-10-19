@@ -60,7 +60,11 @@ fun OnboardingScreen(navController: NavHostController) {
                 Text(text = "eBiblioteka", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
-                    onClick = { navController.navigate("login") },
+                    onClick = {
+                        navController.navigate("home/Gost") {
+                            popUpTo("onboarding") { inclusive = true }
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                     shape = RoundedCornerShape(25.dp),
                     modifier = Modifier.fillMaxWidth().height(50.dp)
